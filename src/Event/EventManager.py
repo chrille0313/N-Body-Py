@@ -1,4 +1,4 @@
-from Event import Event
+import Event.Event
 
 
 class EventManager:
@@ -14,12 +14,12 @@ class EventManager:
     @classmethod
     def remove_listener(cls, event_type, listener):
         if event_type in cls.listeners:
-            del cls.listeners[event_type]
+            cls.listeners[event_type].remove(listener)
 
     @classmethod
     def post(cls, event):
         if event.type in cls.listeners:
-            for listener in cls.listeners[event.event_type]:
+            for listener in cls.listeners[event.type]:
                 listener.on_event(event)
 
     @classmethod

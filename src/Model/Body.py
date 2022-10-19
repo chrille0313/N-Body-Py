@@ -1,5 +1,5 @@
 from math import sqrt
-from Model import Vector2D
+from Model.Vector2D import Vector2D
 
 
 class Body:

@@ -5,6 +5,11 @@ from Model.Vector2D import Vector2D
 class Body:
     """
         A class representing a body in space.
+
+        Has a position, mass, velocity and acceleration and handles
+        updating these according to timestep.
+
+        Size is dependent on the square root of the mass.
     """
 
     def __init__(self, position: Vector2D,

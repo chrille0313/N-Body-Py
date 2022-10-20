@@ -1,4 +1,3 @@
-import pygame
 from Camera import Camera
 from Controller.App import App
 from Model.Space import Space

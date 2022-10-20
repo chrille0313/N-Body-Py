@@ -1,6 +1,3 @@
-import Event.Event
-
-
 class EventManager:
     listeners = {}
 

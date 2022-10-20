@@ -6,6 +6,8 @@ from View.SpaceView import SpaceView
 
 from config import WIDTH, HEIGHT
 
+# TODO: Add typhints (camera) and docstrings
+
 if __name__ == '__main__':
     camera = Camera(WIDTH, HEIGHT, (0, 0))
     space_model = Space(WIDTH, HEIGHT, 10)

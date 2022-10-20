@@ -2,8 +2,9 @@ import pygame
 from Event.Event import Event
 from Event.EventManager import EventManager
 
-# TODO: Camera view and camera model?
+
 class App:
+
     def __init__(self, model, view, camera):
         self.running = False
         self.model = model
@@ -21,7 +22,7 @@ class App:
     def handle_input(self):
         if self.keys[pygame.K_ESCAPE]:
             self.quit()
-        
+
         if self.keys[pygame.K_w]:
             EventManager.post(Event(Event.EventType.MOVE_UP))
         if self.keys[pygame.K_s]:
@@ -48,11 +49,6 @@ class App:
     def update(self):
         self.model.update()
 
-    def render(self):
-        self.camera.fill((0, 0, 0))
-        self.view.render(self.camera)
-        pygame.display.update()
-
     def run(self):
         self.running = True
 
@@ -61,6 +57,4 @@ class App:
 
             self.update()
 
-            self.render()
-            
             EventManager.post(Event(Event.EventType.APP_UPDATE))

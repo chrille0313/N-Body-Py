@@ -1,5 +1,5 @@
-import math
 import random
+from math import sqrt
 from Model.Body import Body
 from Model.Vector2D import Vector2D
 
@@ -37,7 +37,7 @@ class Space:
 
         for _ in range(num_bodies):
             mass = random.randint(min_mass, max_mass)
-            radius = math.sqrt(mass)
+            radius = sqrt(mass)
 
             position = Vector2D(random.uniform(0, width - radius), random.uniform(0, height - radius))
             velocity = Vector2D(random.uniform(min_velocity, max_velocity), random.uniform(min_velocity, max_velocity))
@@ -94,7 +94,6 @@ class Space:
                 if i != j and self.bodies_are_colliding(body, other_body):
                     if self.bodies_are_colliding(body, other_body):
                         self.collide_bodies(body, other_body)
-
 
     def collision(self) -> None:
         self.bounding_box_collision()

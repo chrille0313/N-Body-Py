@@ -72,7 +72,7 @@ class Camera:
         """
         Handles event when event is fetched by EventManager.
 
-        :param event: 
+        :param event:
         :return:
         """
 

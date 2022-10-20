@@ -1,4 +1,3 @@
-from pygame import surface
 from Model.Space import Space
 from View.BodyView import BodyView
 

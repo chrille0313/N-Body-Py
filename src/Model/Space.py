@@ -6,7 +6,7 @@ from Event.EventManager import EventManager
 from Event.Event import Event
 
 
-def gravitational_force(body1: Body, body2: Body, G: float = 0.01) -> Vector2D:
+def gravitational_force(body1: Body, body2: Body, G: float = 10000) -> Vector2D:
     """
         Calculate the gravitational force between two bodies
         using Newton's law of gravitational attraction.
@@ -37,19 +37,7 @@ class Space:
     @classmethod
     def create_galaxy(cls, width: int, height: int, num_bodies: int,
                       min_mass: int = 10, max_mass: int = 100,
-                      min_velocity: int = 0, max_velocity: int = 0.01) -> list[Body]:
-        """
-        Create a galaxy of bodies.
-
-        :param width: Width of the space to create the galaxy in
-        :param height: Height of the space to create the galaxy in
-        :param num_bodies: Number of bodies in the galaxy
-        :param min_mass: Minimum mass of a body
-        :param max_mass: Maximum mass of a body
-        :param min_velocity: Minimum initial velocity of a body
-        :param max_velocity: Maximum initial velocity of a body
-        :return: List of bodies constituting the galaxy
-        """
+                      min_velocity: int = 0, max_velocity: int = 250) -> list[Body]:
 
         bodies = []
 
@@ -62,7 +50,7 @@ class Space:
             bodies.append(Body(position, mass, velocity))
 
         return bodies
-    
+
     def bounding_box_collision(self) -> None:
         for body in self.bodies:
             if body.position.x < 0:
@@ -85,35 +73,58 @@ class Space:
         return (body1.position - body2.position).magnitude_squared() <= tot_size * tot_size
 
     @classmethod
-    def collide_bodies(cls, body1: Body, body2: Body) -> None:
+    def bodies_are_moving_apart(cls, body1: Body, body2: Body) -> bool:
+        return (body1.position - body2.position).dot(body1.velocity - body2.velocity) > 0
+
+    @classmethod
+    def get_intersection_vector(cls, body1: Body, body2: Body) -> Vector2D:
+        """
+            Get the vector required to move body1 out of body2, relative by their mass.
+        """
+
         displacement = body1.position - body2.position
-        d = displacement.magnitude()
-        intersection_distance = displacement * (body1.size + body2.size - d) / d  # minimum distance to make sure bodies don't overlap
+        displacement_dist = displacement.magnitude()
+        intersection_vector = displacement * (body1.size + body2.size - displacement_dist) / displacement_dist  # minimum distance to make sure bodies don't overlap
 
-        inverse_mass = 1 / body1.mass
-        inverse_mass_other = 1 / body2.mass
+        return intersection_vector * body1.mass / (body1.mass + body2.mass)
 
-        body1.position += intersection_distance * inverse_mass / (inverse_mass + inverse_mass_other)
-        body2.position -= intersection_distance * inverse_mass / (inverse_mass + inverse_mass_other)
+    @classmethod
+    def resolve_collision(cls, body1: Body, body2: Body) -> None:
+        """
+            Resolve a collision between two bodies by moving them out of each other.
+        """
 
-        v_diff = body1.velocity - body2.velocity
-        if v_diff.dot(displacement.normalize()) > 0.0:
-            return  # No collision as bodies are moving apart
+        intersection_vector = cls.get_intersection_vector(body1, body2)
+        body1.position += intersection_vector
+        body2.position -= intersection_vector
 
-        # Calculate the new velocities using conservation of momentum and kinetic energy (elastic collisions)
-        # https://en.wikipedia.org/wiki/Elastic_collision
+    @classmethod
+    def elastic_collision(cls, body1: Body, body2: Body) -> None:
+        """
+            Calculate new velocities between two bodies by applying an elastic collision.
+            https://en.wikipedia.org/wiki/Elastic_collision
+        """
 
         displacement = body1.position - body2.position  # Update displacement as we have moved the bodies
+        v_diff = body1.velocity - body2.velocity
         impulse = 2 / (body1.mass + body2.mass) * v_diff.dot(displacement) / displacement.magnitude_squared() * displacement
         body1.velocity -= impulse * body2.mass
         body2.velocity += impulse * body1.mass
+
+    @classmethod
+    def collide_bodies(cls, body1: Body, body2: Body) -> None:
+        cls.resolve_collision(body1, body2)
+
+        if cls.bodies_are_moving_apart(body1, body2):
+            return  # No collision as bodies are moving apart
+
+        cls.elastic_collision(body1, body2)
 
     def body_collision(self) -> None:
         for i, body in enumerate(self.bodies):
             for j, other_body in enumerate(self.bodies):
                 if i != j and self.bodies_are_colliding(body, other_body):
-                    if self.bodies_are_colliding(body, other_body):
-                        self.collide_bodies(body, other_body)
+                    self.collide_bodies(body, other_body)
 
     def collision(self) -> None:
         self.bounding_box_collision()
@@ -121,20 +132,25 @@ class Space:
 
     def update(self, dt: float = 1) -> None:
         # Gravity
-        for i, body in enumerate(self.bodies):
-            force = Vector2D(0, 0)
+        try:
+            for i, body in enumerate(self.bodies):
+                force = Vector2D(0, 0)
 
-            for j, other_body in enumerate(self.bodies):
-                if i != j:
-                    force += gravitational_force(body, other_body)
+                # Sum the force exerted by all other bodies
+                for j, other_body in enumerate(self.bodies):
+                    if i != j:
+                        force += gravitational_force(body, other_body)
 
-            body.acceleration = force / body.mass
+                body.acceleration = force / body.mass
 
-        # Collision
-        self.collision()
+            # Collision
+            self.collision()
+
+        except ZeroDivisionError:
+            pass
 
         # Update
         for body in self.bodies:
             body.update(dt)
 
-        EventManager.post(Event(Event.EventType.SPACE_UPDATE))
+        EventManager.post(Event(Event.EventType.SPACE_UPDATE, dt))

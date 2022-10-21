@@ -6,8 +6,8 @@ from Model.Vector2D import Vector2D
 
 class CameraView:
     """
-    Camera class to handle rendering of a model.
-    It is made up of a canvas with given dimensions and a model to render.
+        Camera class to handle rendering of a model.
+        It is made up of a canvas with given dimensions and a model to render.
     """
 
     def __init__(self, width: int, height: int, camera_model) -> None:
@@ -22,10 +22,10 @@ class CameraView:
 
     def camera_space_to_screen_space(self, position: Vector2D) -> Vector2D:
         """
-        Converts a position relative to camera, to a screen position.
+            Converts a position relative to camera, to a screen position.
 
-        :param: position: Position relative to camera
-        :return: Position in screen space
+            :param: position: Position relative to camera
+            :return: Position in screen space
         """
 
         new_position = position + Vector2D(self.canvas_width / 2, self.canvas_height / 2)
@@ -34,6 +34,6 @@ class CameraView:
 
     def on_event(self, event):
         if event.type == Event.EventType.CAMERA_UPDATE:
-            self.canvas.fill((0, 0, 0))
+            self.canvas.fill((0, 0, 0))  # Clear the screen
             EventManager.post(Event(Event.EventType.RENDER, self.model, self))
             pygame.display.update()

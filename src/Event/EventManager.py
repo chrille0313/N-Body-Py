@@ -1,4 +1,9 @@
 class EventManager:
+    """
+        The global event manager. Classes can subscribe to an event, and will be notified by their
+        on_event function being called when the event is posted
+    """
+
     listeners = {}
 
     @classmethod
